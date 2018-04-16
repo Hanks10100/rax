@@ -1,7 +1,6 @@
 import Windmill from '@ali/windmill-renderer/dist/windmill.renderer';
 /* global BroadcastChannel */
 'use strict';
-const isInWindmill = weex.config.container === 'windmill' || false;
 
 import {ModuleFactories} from './builtin';
 import EventEmitter from './emitter';
@@ -18,7 +17,6 @@ const MODAL_MODULE = MODULE_NAME_PREFIX + 'modal';
 const NAVIGATOR_MODULE = MODULE_NAME_PREFIX + 'navigator';
 const GLOBAL_EVENT_MODULE = MODULE_NAME_PREFIX + 'globalEvent';
 const noop = function() {};
-let weex = {};
 
 function genBuiltinModules(modules, moduleFactories, context) {
   for (let moduleName in moduleFactories) {
@@ -32,7 +30,7 @@ function genBuiltinModules(modules, moduleFactories, context) {
 }
 
 function initPageEvent(require, windmill, document) {
-  
+
   windmill.$cycle('refresh', function(){
     document.documentElement.fireEvent('refresh', {
       timestamp: Date.now()
@@ -75,15 +73,15 @@ export function resetInstanceContext(instanceContext) {
     instanceId,
     document,
     bundleUrl,
-    windmill,
     __weex_document__,
     __weex_options__,
     __weex_data__,
     __weex_config__
   } = instanceContext;
 
-  weex = __weex_options__.weex;
-  windmill = Windmill(weex);
+  const weex = __weex_options__.weex || {};
+  const isInWindmill = weex.config.container === 'windmill';
+  const windmill = Windmill(weex);
 
   // Mark start time
   const responseEnd = Date.now();
