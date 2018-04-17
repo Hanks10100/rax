@@ -1,4 +1,4 @@
-import Windmill from '@ali/windmill-renderer/dist/windmill.renderer';
+import setupWindmillRenderer from '@ali/windmill-renderer/dist/windmill.renderer';
 /* global BroadcastChannel */
 'use strict';
 
@@ -30,23 +30,43 @@ function genBuiltinModules(modules, moduleFactories, context) {
 }
 
 function initPageEvent(windmill, window) {
+  const supportedPageLifecycles = [
+    'load', 'ready', 'show', 'hide', 'unload'
+  ];
+  const supportedPageEvents = [
+    'pullDownRefresh', 'reachBottom', 'shareAppMessage',
+    'pageScroll', 'TabItemTap'
+  ];
+
   // listening on page lifecycles
-  windmill.$cycle('refresh', function() {
-    window.dispatchEvent({
-      type: 'page:refresh',
-      timestamp: Date.now()
-    });
-  });
-  windmill.$cycle('destroy', function() {
-    window.dispatchEvent({
-      type: 'page:destroy',
-      timestamp: Date.now()
+  supportedPageLifecycles.forEach(lifecycle => {
+    const eventType = `page:${lifecycle}`;
+    windmill.$cycle(eventType, (options) => {
+      window.dispatchEvent({
+        type: eventType,
+        timestamp: Date.now(),
+        data: options
+      });
     });
   });
 
-  // windmill $call error
-  window.addEventListener('weexsecurityerror', function(e) {
-    console.log('weexsecurityerror' + e);
+  // listening on page events
+  supportedPageEvents.forEach(eventType => {
+    windmill.$on(eventType, (event) => {
+      window.dispatchEvent(Object.assign({}, event, {
+        type: eventType,
+        timestamp: Date.now()
+      }));
+    });
+  });
+
+  // dispatch module call error
+  const errorName = 'weexsecurityerror';
+  windmill.$on(errorName, message => {
+    const errorEvent = typeof window.CustomEvent === 'function'
+      ? new window.CustomEvent('WeexSecurityError', { detail: message })
+      : { type: 'WeexSecurityError', detail: message };
+    window.dispatchEvent(errorName, errorEvent);
   });
 }
 
@@ -80,7 +100,7 @@ export function resetInstanceContext(instanceContext) {
 
   const weex = __weex_options__.weex || {};
   const isInWindmill = weex.config.container === 'windmill';
-  const windmill = Windmill(weex);
+  const windmill = setupWindmillRenderer(weex);
 
   // Mark start time
   const responseEnd = Date.now();

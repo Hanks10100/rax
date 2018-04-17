@@ -1,5 +1,11 @@
 const MODULE_NAME_PREFIX = '@weex-module/';
 
+const availableWindmillModules = [''];
+function isAvailableWindmillModule(moduleName) {
+  // return availableWindmillModules.indexOf(module) !== -1;
+  return true;
+}
+
 module.exports = function(modules, weex, windmill) {
   const isInWindmill = weex.config.container === 'windmill';
   function require(name) {
@@ -8,7 +14,7 @@ module.exports = function(modules, weex, windmill) {
     // if require '@weex-module/'
     if (name.split(MODULE_NAME_PREFIX).length > 1) {
       const weexModuleName = name.split(MODULE_NAME_PREFIX)[1];
-      if (isInWindmill) {
+      if (isInWindmill && isAvailableWindmillModule(weexModuleName)) {
         var handler = {
           get: function(target, api) {
             return function(cfg) {
