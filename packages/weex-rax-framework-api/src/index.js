@@ -29,26 +29,25 @@ function genBuiltinModules(modules, moduleFactories, context) {
   return modules;
 }
 
-function initPageEvent(require, windmill, document) {
-
-  windmill.$cycle('refresh', function(){
-    document.documentElement.fireEvent('refresh', {
+function initPageEvent(windmill, window) {
+  // listening on page lifecycles
+  windmill.$cycle('refresh', function() {
+    window.dispatchEvent({
+      type: 'page:refresh',
       timestamp: Date.now()
     });
   });
-
-  windmill.$cycle('destory', function(){
-    document.documentElement.fireEvent('destory', {
+  windmill.$cycle('destroy', function() {
+    window.dispatchEvent({
+      type: 'page:destroy',
       timestamp: Date.now()
     });
   });
 
   // windmill $call error
-  var globalEvent = require(GLOBAL_EVENT_MODULE);
-  globalEvent.addEventListener('weexsecurityerror', function (e) {
+  window.addEventListener('weexsecurityerror', function(e) {
     console.log('weexsecurityerror' + e);
   });
-
 }
 
 export function injectContext() {
@@ -150,8 +149,6 @@ export function resetInstanceContext(instanceContext) {
 
     registerErrorHandler.once = true;
   }
-
-  initPageEvent(__weex_require__, windmill, document);
 
   const window = {
     // ES
@@ -275,7 +272,7 @@ export function resetInstanceContext(instanceContext) {
         }
       } else if (type === '@system:message') {
         // for miniApp
-        windmill.on(type, listener);
+        windmill.$on(type, listener);
       } else {
         windowEmitter.on(type, listener);
       }
@@ -320,6 +317,8 @@ export function resetInstanceContext(instanceContext) {
     ModuleFactories,
     window
   );
+
+  initPageEvent(windmill, window);
 
   window.self = window.window = window;
 
