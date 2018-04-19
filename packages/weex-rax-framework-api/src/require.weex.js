@@ -8,6 +8,7 @@ function isAvailableWindmillModule(moduleName) {
 
 module.exports = function(modules, weex, windmill) {
   const isInWindmill = weex.config.container === 'windmill';
+  console.log(`[Rax] create require function, container: ${weex.config.container}`);
   function require(name) {
     var mod = modules[name];
 
@@ -15,8 +16,10 @@ module.exports = function(modules, weex, windmill) {
     if (name.split(MODULE_NAME_PREFIX).length > 1) {
       const weexModuleName = name.split(MODULE_NAME_PREFIX)[1];
       if (isInWindmill && isAvailableWindmillModule(weexModuleName)) {
+        console.log(`[Rax] require windmill module: ${weexModuleName}`);
         var handler = {
           get: function(target, api) {
+            console.log(`[Rax] create windmill module api: ${weexModuleName}.${api}`);
             return function(cfg) {
               console.log('$call: ' + weexModuleName + '.' + api);
               return windmill.$call(weexModuleName + '.' + api, cfg);
@@ -25,6 +28,7 @@ module.exports = function(modules, weex, windmill) {
         };
         return new Proxy({}, handler);
       } else {
+        console.log(`[Rax] require weex module ${weexModuleName}`);
         if (weex.isRegisteredModule(weexModuleName)) {
           return weex.requireModule(weexModuleName);
         } else {

@@ -41,7 +41,9 @@ function initPageEvent(windmill, window) {
   // listening on page lifecycles
   supportedPageLifecycles.forEach(lifecycle => {
     const eventType = `page:${lifecycle}`;
+    console.log(`[Rax] listening on lifecycle: "${eventType}"`);
     windmill.$cycle(eventType, (options) => {
+      console.log(`[Rax] receive lifecycle: "${eventType}"`);
       window.dispatchEvent({
         type: eventType,
         timestamp: Date.now(),
@@ -52,7 +54,9 @@ function initPageEvent(windmill, window) {
 
   // listening on page events
   supportedPageEvents.forEach(eventType => {
+    console.log(`[Rax] listening on event: "${eventType}"`);
     windmill.$on(eventType, (event) => {
+      console.log(`[Rax] receive event: "${eventType}"`);
       window.dispatchEvent(Object.assign({}, event, {
         type: eventType,
         timestamp: Date.now()
