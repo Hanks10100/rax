@@ -1,9 +1,10 @@
 const MODULE_NAME_PREFIX = '@weex-module/';
 
-const availableWindmillModules = [''];
+const availableWindmillModules = [
+  'storage', 'navigator', 'network', 'mtop'
+];
 function isAvailableWindmillModule(moduleName) {
-  // return availableWindmillModules.indexOf(module) !== -1;
-  return true;
+  return availableWindmillModules.indexOf(module) !== -1;
 }
 
 module.exports = function(modules, weex, windmill) {
